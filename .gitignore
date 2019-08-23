@@ -35,3 +35,9 @@ vignettes/*.pdf
 
 # Shiny token, see https://shiny.rstudio.com/articles/shinyapps.html
 rsconnect/
+
+# Data folders, don't store them on git
+data/
+
+# Results folder
+Results/

@@ -2,5 +2,5 @@
 # results: vector of results to be saved
 # file: path to file which will contain the results
 writeResults <- function(results, file) {
-  write(results, file, ncolumns=length(results), append=TRUE)
+  write_csv(results, file)
 }

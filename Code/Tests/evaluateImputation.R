@@ -1,19 +1,28 @@
-# Return the imputed data and performance metrics for the method.
-# impute: function used to impute the incomplete data
-# incompleteData: list of matrices with missing values
-# removedData: list of matrices which contain the values missing in
-# incompleteData
+#' Evaluate Imputation
+#'
+#' Given a function for imputation impute, incompleteData a tibble with
+#' missingness artificially applied and it's corresponding complete tibble
+#' completeData, calculate and return metrics for how well the imputation
+#' performed.
+#'
+#' @param impute: function used to impute the incomplete data
+#' @param incompleteData: numeric matrix with missing values artificially applied
+#' @param completeData: numeric matrix with no missingness
+#'
+#' @return list of metrics for how well impute performed on incompleteData
+#'
+#'
+evaluateImputation <- function(impute, incompleteData, completeData) {
 
-evaluateImputation <- function(impute, incompleteData, removedData) {
+  num_missing <- is.na(incompleteData) %>% sum()
   # Impute the incomplete data
   runTime <- system.time(imputedData <- impute(incompleteData))[3]
-  
+
   # Evaluate the imputed data
   # Note: the metrics for each data type is calculated separately
-  nrmse <- sapply(1:length(incompleteData), function(i)
-    imputationErrors(removedData[[i]], imputedData[[i]])$nrmse)
-  
+  nrmse <- imputationErrors(completeData, imputedData, num_missing)
+
   results <- c(nrmse, runTime)
 
-  return(list(imputedData=imputedData, results=results))
+  list(imputedData=imputedData, results=results)
 }

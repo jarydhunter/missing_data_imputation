@@ -48,4 +48,8 @@ source("splitConcatenatedData.R")
 source("standardNormalization.R")
 source("writeResults.R")
 
+#More functions which I (Jaryd) have added.
+setwd(paste(codeFolder, "data_loaders", sep="/"))
+source("load_butterfly.R")
+
 setwd(workingDirectory)

@@ -8,6 +8,7 @@
 
 evaluateClustering <- function(cluster, data, completeLabels,
                                clinicalData) {
+  browser()
   # Cluster the data
   runTime <- system.time(labels <- cluster(data))[3]
 

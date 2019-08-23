@@ -1,8 +1,7 @@
 #!/bin/bash
 
-home=/hpf/largeprojects/agoldenb/ben
-project=${home}/Projects/SNF/NM_2015
-test=${project}/Scripts/06_Two_Thousand_Features_Dup/cluster_complete_data
+home=$PWD
+test=${home}Scripts/06_Two_Thousand_Features_Dup/cluster_complete_data
 
 # Clear output from previous runs
 #rm ${test}/Error/*

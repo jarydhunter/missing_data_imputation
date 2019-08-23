@@ -1,23 +1,28 @@
-# Return a list of imputation errors.
-# removed: a matrix containing the values of entries which will be
-# used to calculate the error; all other entries are NA
-# imputed: a matrix containing imputed values at the same positions
-# as values present in the removed matrix 
+#' Calculate imputation errors
+#'
+#' For a given tibble of completeData, and imputedData a tibble with imputed
+#' values, caculate the mse, rmse, nrmse, rae for the true values with the
+#' imputed version.
+#'
+#' @param original: a tibble or the original values
+#' @param imputed: a tibble where some values are imputed
+#' @param num_missing: integer of how many values were imputed
+#'
+#' @return named list of values, mse, rmse, nrmse, and rae
+imputationErrors <- function(original, imputed, num_missing) {
 
-imputationErrors <- function(removed, imputed) {
-  mse <- 0
-  rmse <- 0
-  nrmse <- 0
-  rae <- 0
-  if (!all(is.na(removed))) {
-    mse <- mean((removed-imputed)^2, na.rm=TRUE) # MSE
-    rmse <- mse^0.5 # RMSE
-    nrmse <- rmse/sd(as.vector(removed), na.rm=TRUE) # NRMSE
-    
-    absError <- abs(removed - imputed)
-    relAbsError <- absError / abs(removed)
-    rae <- mean(relAbsError, na.rm=TRUE) # RAE
-  }
-  
-  return(list(mse=mse, rmse=rmse, nrmse=nrmse, rae=rae))
+  # using num_missing, since we know all non-imputed entries in imputed will be
+  # exactly the same as the original so those will all sum to 0.
+  mse <- sum((original-imputed)^2)/num_missing
+  rmse <- mse^0.5 # RMSE
+  # using as definition of nrmse, rmse/sd(data), since for some datasets we
+  # have a mean very very close to zero, which can cause dividing by it to
+  # explode which can make this measure uninterpretable.
+  nrmse <- rmse/sd(as.matrix(original))
+
+  absError <- abs(original - imputed)
+  relAbsError <- absError / abs(original)
+  rae <- sum(relAbsError)/num_missing # RAE
+
+  list(mse=mse, rmse=rmse, nrmse=nrmse, rae=rae)
 }
