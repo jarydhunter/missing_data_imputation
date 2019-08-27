@@ -29,7 +29,6 @@ if(!file.exists(resultsFolder)){
 ### Leaving these variables as is for now, will need to adjust as I go through
 ### the rest of this script.
 # Initialize fixed variables
-jvmGBLimit <- 8
 cancerTypes <- c("BRCA", "KIRC", "LIHC", "LUAD", "LUSC")
 dataTypes <- c("methyl", "mirna", "mrna")
 numCores <- 12
@@ -38,15 +37,13 @@ numFeat <- 2000
 # Initialize variable parameters
 # Data set which will be tested
 dataset <- 'butterfly' #argv[1]
-runType <- 1 #argv[2]
+runType <- 3 #argv[2]
 seed <- 7 #argv[3]
 
 ######################################################################
 # Load functions
 
 # Note: some functions depend on variables initialized above!
-# lsaImputation:
-# -imputedFile, incompleteFile, projectFolder, jvmGBLimit
 # iClusterClustering:
 # -numCores
 # source(paste(projectFolder, "Scripts/loadFunctions.R", sep="/"))
@@ -88,95 +85,13 @@ set.seed(seed)
 
 addedMissingness <- generateIncompleteIntersection(dat)
 
-# Extract all cases which appear in all of the data types in the
-# incomplete data
-
-# ######################################################################
-# # Select a subset of features which differ most between cases and
-# # controls.
-#
-# featureSubsetIndices <- function(cases, subsetSize=numFeat) {
-#   numViews <- length(cases)
-#   featureSubsetInd <- vector("list", numViews)
-#
-#   for (v in 1:numViews) {
-#     # Calculate the t-test p-value for each feature, grouped by cases
-#     # and controls
-#     numFeatures <- nrow(cases[[v]])
-#     pval <- sapply(1:numFeatures,
-#                    function(i) t.test(cases[[v]][i, ],
-#                                       controls[[v]][i, ])$p.value)
-#
-#     # Subset the data keeping the features with the smallest p-values
-#     ind <- order(pval)
-#     featureSubsetInd[[v]] <- ind[1:min(subsetSize, numFeatures)]
-#   }
-#
-#   return(featureSubsetInd)
-# }
-#
-# subsetData <- function(data, ind) {
-#   for (v in 1:length(data)) {
-#     data[[v]] <- data[[v]][ind[[v]], ]
-#   }
-#
-#   return(data)
-# }
-#
-# completeInd <- featureSubsetIndices(completeData)
-# completeData <- subsetData(completeData, completeInd)
-#
-# incompleteInd <- featureSubsetIndices(incompleteData)
-# incompleteData <- subsetData(incompleteData, incompleteInd)
-# removedData <- subsetData(removedData, incompleteInd)
-
 ######################################################################
-# Normalize the features in the data sets.
-# Normalization is performed before imputation and we expect that the
-# data will still be normalized after imputation (before clustering).
+# Evaluate the performance of the imputation methods, and save the resulting
+# imputed matrices.
 
-# rowStatistics <- function(cases) {
-#   numViews <- length(cases)
-#   rowStats <- vector("list", numViews)
-#
-#   for (v in 1:numViews) {
-#     # Calculate the row means and standard deviations
-#     rowMean <- apply(cases[[v]], 1, mean, na.rm=TRUE)
-#     rowSd <- apply(cases[[v]], 1, sd, na.rm=TRUE)
-#     constantInd <- rowSd==0
-#     rowSd[constantInd] <- 1
-#     rowStats[[v]] <- list(mean=rowMean, sd=rowSd, ind=constantInd)
-#   }
-#
-#   return(rowStats)
-# }
-#
-# normalizeData <- function(data, stat) {
-#   for (v in 1:length(data)) {
-#     data[[v]] <- (data[[v]] - stat[[v]]$mean) / stat[[v]]$sd
-#     data[[v]] <- data[[v]][!stat[[v]]$ind, ]
-#   }
-#
-#   return(data)
-# }
-#
-# completeStat <- rowStatistics(completeData)
-# completeData <- normalizeData(completeData, completeStat)
-#
-# incompleteStat <- rowStatistics(incompleteData)
-# incompleteData <- normalizeData(incompleteData, incompleteStat)
-# removedData <- normalizeData(removedData, incompleteStat)
-
-
-######################################################################
-# Evaluate the performance of the methods
-
-# Flag indicating if the rows are the observations or not.
-sampleRows <- FALSE
-clusteringMethods <- c(hierarchicalClustering, iClusterClustering,
-                       SNFClustering)
-imputationMethods <- c('knnImputation', 'llsImputation', 'lsaImputation',
-                       'randomImputation')
+# clusteringMethods <- c(hierarchicalClustering, iClusterClustering,
+#                        SNFClustering)
+imputationMethods <- c('knnImputation', 'llsImputation', 'lsaImputation')
 
 ### The knn method takes weird input, it needs genes as rows and "samples" as columns,
 ### this is probably why Ben was making all features rows, I'd rather just
@@ -195,10 +110,9 @@ imputationResults <- imputationOutput$results
 imputationResultsFile <- paste0(resultsFolder, '/', imputationMethods[[runType]], "_summary_stats.csv")
 write_csv(as_tibble(imputationResults), imputationResultsFile)
 
-### In this new version I won't be comparing the different clustering methods for
+### In this new version I won't bundle the different clustering methods with
 ### each imputation method, instead I will try each imputation method and
-### choose the one that is the closest as the best imputation method, then apply
-### the snf clustering method to that best imputation.
+### store the resulting object, then apply each clustering method.
 # Save the results of clustering the imputed and intersected data
 # for (i in 1:length(clusteringMethods)) {
 #   completeLabels <- as.matrix(tibs[['labels']])

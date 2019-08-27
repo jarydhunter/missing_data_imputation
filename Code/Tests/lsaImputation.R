@@ -1,27 +1,31 @@
-lsaImputation <- function(incompleteData) {
-  # Variables which have not been initialized:
-  # imputedFile, incompleteFile, projectFolder, jvmGBLimit
-
-  # Transpose the data for LSA
-  # LSA requires samples in rows
-  sampleRowsRequired <- TRUE
-  transposeData <- sampleRows != sampleRowsRequired
-  if (transposeData) {
-    incompleteData <- lapply(incompleteData, t)
-  }
+#' least squares adaptive imputation
+#'
+#' Perform least squares adaptive imputation on the given matrix which already
+#' has some missingness. This function calls a function written in Java to perform
+#' the imputation.
+#'
+#' @param incompleteData a matrix with missingness to be imputed upon
+#' @param jvmGBLimit the memory limit in Gigabytes for the java virtual machine
+#'
+#' @return a matrix with no missingness, all missingness imputed by the LSA
+#' algorithm.
+#'
+lsaImputation <- function(incompleteData, jvmGBLimit = 8) {
+  browser()
+  projectFolder <- getwd()
+  incompleteFile <- paste0(projectFolder, '/incompleteFile')
+  imputedFile <- paste0(projectFolder, '/Results/imputedFile')
 
   # Concatenate the data by columns because the samples are in rows
   # Row and column names are required for the LSA code
-  concatenatedIncompleteData <- do.call(cbind, incompleteData) # cols
-  concatenatedRownames <- rownames(concatenatedIncompleteData) # rows
-  colnames(concatenatedIncompleteData) <-
-    as.character(1:ncol(concatenatedIncompleteData))
-  rownames(concatenatedIncompleteData) <-
-    as.character(1:nrow(concatenatedIncompleteData))
+  column_names <- colnames(incompleteData)
+  row_names <- rownames(incompleteData)
+  colnames(incompleteData) <- as.character(1:ncol(incompleteData))
+  rownames(incompleteData) <- as.character(1:nrow(incompleteData))
 
   # Save the incomplete data to a file
   cat("xxx","\t", file=incompleteFile, sep="")
-  write.table(concatenatedIncompleteData, incompleteFile,
+  write.table(incompleteData, incompleteFile,
               col.names=TRUE, row.names=TRUE, sep="\t", quote=FALSE,
               na="NULL",append=TRUE)
 
@@ -35,25 +39,14 @@ lsaImputation <- function(incompleteData) {
   system(javaCommand)
 
   # Read the imputed file
-  concatenatedImputedData <-
-    data.matrix(read.table(imputedFile, header=TRUE, sep="\t"))
-  concatenatedImputedData <- concatenatedImputedData[, -1]
-  rownames(concatenatedImputedData) <- concatenatedRownames # rows
+  imputedData <- data.matrix(read.table(imputedFile, header=TRUE, sep="\t"))
+  imputedData <- imputedData[, -1]
+  colnames(imputedData) <- column_names
+  rownames(imputedData) <- row_names
 
   # Remove the files used for imputation
   system(paste("rm", imputedFile, sep=" "))
   system(paste("rm", incompleteFile, sep=" "))
 
-  # Split the concatenated data by columns
-  featureSize <- sapply(incompleteData, ncol) # cols
-  imputedData <- splitConcatenatedData(concatenatedImputedData,
-                                       featureSize,
-                                       sampleRowsRequired)
-
-  # Reorient the data to its original form
-  if (transposeData) {
-    imputedData <- lapply(imputedData, t)
-  }
-
-  return(imputedData)
+  imputedData
 }
