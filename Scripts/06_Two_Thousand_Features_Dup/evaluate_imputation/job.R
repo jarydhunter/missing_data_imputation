@@ -36,9 +36,9 @@ numFeat <- 2000
 
 # Initialize variable parameters
 # Data set which will be tested
-dataset <- 'butterfly' #argv[1]
-runType <- 3 #argv[2]
-seed <- 7 #argv[3]
+dataset <- argv[1]
+runType <- argv[2]
+seed <- argv[3]
 
 ######################################################################
 # Load functions
