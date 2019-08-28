@@ -3,13 +3,13 @@
 
 argv <- commandArgs(T)
 
-if (length(argv)==0) {
-    stop("A dataset must be supplied")
-} else if(length(argv)==1){
-    argv[2] <- 1 # default imputation method
-    argv[3] <- 42 # default seed
-} else if(length(argv) == 2){
-    argv[3] <- 42
+if (length(argv)<= 1) {
+    stop("A home directory and dataset must be supplied")
+} else if(length(argv)==2){
+    argv[3] <- 1 # default imputation method
+    argv[4] <- 42 # default seed
+} else if(length(argv) == 3){
+    argv[4] <- 42
 }
 ######################################################################
 # Load libraries
@@ -21,7 +21,8 @@ library(tidyverse)
 
 ######################################################################
 # Initialize folders
-projectFolder <- getwd()
+projectFolder <- argv[1]
+setwd(projectFolder)
 testFolder <- paste(projectFolder, "Scripts",
                     "06_Two_Thousand_Features_Dup",
                     "evaluate_imputation", sep="/")
@@ -42,9 +43,9 @@ numFeat <- 2000
 
 # Initialize variable parameters
 # Data set which will be tested
-dataset <- argv[1]
-runType <- as.numeric(argv[2])
-seed <- as.numeric(argv[3])
+dataset <- argv[2]
+runType <- as.numeric(argv[3])
+seed <- as.numeric(argv[4])
 
 ######################################################################
 # Load functions
