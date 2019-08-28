@@ -41,3 +41,7 @@ data/
 
 # Results folder
 Results/
+
+# Ignore error and output files
+*/Error/*
+*/Output/*
