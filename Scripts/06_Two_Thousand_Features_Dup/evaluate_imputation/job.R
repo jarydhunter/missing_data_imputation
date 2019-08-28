@@ -1,5 +1,3 @@
-#!/hpf/tools/centos6/R/3.1.0/bin/Rscript
-
 # Script to evaluate the how each imputation method affects the
 # performance of the clustering methods
 
