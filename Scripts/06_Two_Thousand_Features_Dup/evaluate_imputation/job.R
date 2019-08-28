@@ -1,8 +1,16 @@
 # Script to evaluate the how each imputation method affects the
 # performance of the clustering methods
 
-argv <- as.numeric(commandArgs(T))
+argv <- commandArgs(T)
 
+if (length(argv)==0) {
+    stop("A dataset must be supplied")
+} else if(length(argv)==1){
+    argv[2] <- 1 # default imputation method
+    argv[3] <- 42 # default seed
+} else if(length(argv) == 2){
+    argv[3] <- 42
+}
 ######################################################################
 # Load libraries
 library(SNFtool)
@@ -35,8 +43,8 @@ numFeat <- 2000
 # Initialize variable parameters
 # Data set which will be tested
 dataset <- argv[1]
-runType <- argv[2]
-seed <- argv[3]
+runType <- as.numeric(argv[2])
+seed <- as.numeric(argv[3])
 
 ######################################################################
 # Load functions
@@ -70,7 +78,7 @@ dat <- tibs[['dat']]
 
 ######################################################################
 # Subset the data into complete and incomplete observations, complete set will
-# bet used to create a false missingness to evaluate the quality of the four
+# be used to create a false missingness to evaluate the quality of the four
 # imputation methods Ben used on the TCGA data, the best method will be passed to
 # the next part of the analysis to impute the true missing values which will have
 # SNF applied to it to generate the clusters.
