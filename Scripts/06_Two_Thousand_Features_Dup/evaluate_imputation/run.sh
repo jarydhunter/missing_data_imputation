@@ -4,9 +4,9 @@
 test=$PWD/Scripts/06_Two_Thousand_Features_Dup/evaluate_imputation
 
 # Clear output from previous runs
-#rm ${test}/Error/*
-#rm ${test}/Output/*
-#rm ${test}/Results/*/*
+rm ${test}/Error/*
+rm ${test}/Output/*
+rm ${test}/Results/*/*
 
 # Run the jobs
 for i in butterfly; do # Data Set
